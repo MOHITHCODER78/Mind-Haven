@@ -27,7 +27,6 @@ const sendOtpEmail = async ({ email, code }) => {
       return {
         delivered: false,
         preview: code,
-        error: 'Email delivery is not configured on the server.',
       };
     }
 
