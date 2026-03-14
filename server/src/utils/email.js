@@ -23,9 +23,10 @@ const sendOtpEmail = async ({ email, code }) => {
 
   if (!transporter) {
     if (isProduction) {
+      console.log('No SMTP config on Production. Returning preview code for portfolio testing.');
       return {
         delivered: false,
-        preview: null,
+        preview: code,
         error: 'Email delivery is not configured on the server.',
       };
     }
@@ -38,25 +39,29 @@ const sendOtpEmail = async ({ email, code }) => {
   }
 
   try {
-    await transporter.sendMail({
+    const sendPromise = transporter.sendMail({
       from: process.env.SMTP_FROM || process.env.SMTP_USER,
       to: email,
       subject: 'Your Mind Haven login code',
       text: `Your Mind Haven login code is ${code}. It expires in 10 minutes.`,
       html: `<p>Your Mind Haven login code is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
     });
+
+    // Add a 5 second timeout so Render doesn't hang forever
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('SMTP timeout')), 5000)
+    );
+
+    await Promise.race([sendPromise, timeoutPromise]);
+
   } catch (error) {
     console.error('OTP email delivery failed:', error.message);
 
-    // Add extra context for common Resend free-tier error
-    if (error.message && error.message.includes('domain')) {
-      console.error('Note: If you are using Resend on a free tier, you can only send emails to the email address you registered with, unless you verify a custom domain.');
-    }
-
+    // Fallback: If it's a portfolio project and Render blocks SMTP, return the code to the frontend!
     return {
       delivered: false,
-      preview: null,
-      error: 'Unable to send OTP email right now. Please try again later. (Check console for details)',
+      preview: code, // Return code so frontend shows it on screen
+      error: 'Unable to send OTP email right now. Showing code for portfolio testing.',
     };
   }
 
