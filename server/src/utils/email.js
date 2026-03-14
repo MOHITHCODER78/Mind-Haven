@@ -61,7 +61,6 @@ const sendOtpEmail = async ({ email, code }) => {
     return {
       delivered: false,
       preview: code, // Return code so frontend shows it on screen
-      error: 'Unable to send OTP email right now. Showing code for portfolio testing.',
     };
   }
 
