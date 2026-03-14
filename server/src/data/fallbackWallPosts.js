@@ -1,0 +1,68 @@
+const fallbackWallPosts = [
+  {
+    id: 'w1',
+    content: 'I am trying to take exam pressure one chapter at a time instead of scaring myself with the whole syllabus.',
+    tag: 'exam_stress',
+    reactions: { support: 24, relate: 13, strength: 8 },
+    createdAtLabel: '2h ago',
+    status: 'published',
+  },
+  {
+    id: 'w2',
+    content: 'I look calm from outside, but my mind has been racing all day and I am trying to slow it down gently.',
+    tag: 'anxiety',
+    reactions: { support: 29, relate: 18, strength: 10 },
+    createdAtLabel: '3h ago',
+    status: 'published',
+  },
+  {
+    id: 'w3',
+    content: 'Today felt heavy, but I still got through class and that counts for something.',
+    tag: 'depression',
+    reactions: { support: 31, relate: 16, strength: 11 },
+    createdAtLabel: '5h ago',
+    status: 'published',
+  },
+  {
+    id: 'w4',
+    content: 'Heartbreak is making it hard to focus, so I am giving myself permission to recover slowly instead of pretending I am fine.',
+    tag: 'heartbreak',
+    reactions: { support: 19, relate: 12, strength: 7 },
+    createdAtLabel: '8h ago',
+    status: 'published',
+  },
+  {
+    id: 'w5',
+    content: 'Placement pressure is hitting hard, so today I am focusing only on one resume improvement and one coding problem.',
+    tag: 'placements',
+    reactions: { support: 17, relate: 15, strength: 6 },
+    createdAtLabel: '10h ago',
+    status: 'published',
+  },
+  {
+    id: 'w6',
+    content: 'I have been feeling lonely even when I am around people, and I am trying not to shame myself for that.',
+    tag: 'loneliness',
+    reactions: { support: 22, relate: 19, strength: 8 },
+    createdAtLabel: '12h ago',
+    status: 'published',
+  },
+  {
+    id: 'w7',
+    content: 'Burnout feels like my body is present but my mind has no energy left, so I am trying to rest without guilt.',
+    tag: 'burnout',
+    reactions: { support: 27, relate: 14, strength: 9 },
+    createdAtLabel: '14h ago',
+    status: 'published',
+  },
+  {
+    id: 'w8',
+    content: 'I did not give up today, even though it would have been easier to disappear from everything for a while.',
+    tag: 'motivation',
+    reactions: { support: 34, relate: 11, strength: 16 },
+    createdAtLabel: '18h ago',
+    status: 'published',
+  },
+];
+
+module.exports = fallbackWallPosts;
