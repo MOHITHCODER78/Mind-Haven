@@ -18,7 +18,7 @@ function LoginPage() {
   const [verifying, setVerifying] = useState(false);
 
   const authDetails = useMemo(() => pendingAuth || { ...requestForm, role: 'student' }, [pendingAuth, requestForm]);
-  const showDevOtp = import.meta.env.DEV && Boolean(pendingAuth?.devOtp);
+  const showDevOtp = Boolean(pendingAuth?.devOtp);
 
   const handleRequestChange = (event) => {
     const { name, value } = event.target;
