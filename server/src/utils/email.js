@@ -44,6 +44,8 @@ const sendOtpEmail = async ({ email, code }) => {
       subject: 'Your Mind Haven login code',
       text: `Your Mind Haven login code is ${code}. It expires in 10 minutes.`,
       html: `<p>Your Mind Haven login code is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
+    }).catch(err => {
+      throw err; // Force catch below to handle this
     });
 
     // Add a 5 second timeout so Render doesn't hang forever
