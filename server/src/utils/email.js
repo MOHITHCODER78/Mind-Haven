@@ -1,13 +1,12 @@
 const isProduction = process.env.NODE_ENV === 'production';
 
 const sendOtpEmail = async ({ email, code }) => {
-  // We will now look for BREVO_API_KEY instead of SMTP credentials!
-  const apiKey = process.env.BREVO_API_KEY || process.env.SMTP_PASS; // Fallback to SMTP_PASS in case they put it there
-  const senderEmail = process.env.SMTP_FROM || process.env.SMTP_USER;
+  // Now explicitly looking for RESEND_API_KEY
+  const apiKey = process.env.RESEND_API_KEY;
 
-  if (!apiKey || !senderEmail) {
+  if (!apiKey) {
     if (isProduction) {
-      console.log('No Brevo API configuration on Production. Returning preview code for portfolio testing.');
+      console.log('No Resend API configuration on Production. Returning preview code for portfolio testing.');
       return {
         delivered: false,
         preview: code,
@@ -22,31 +21,24 @@ const sendOtpEmail = async ({ email, code }) => {
   }
 
   try {
-    // This uses the native Fetch API (no nodemailer, no SMTP port firewalls!)
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    // Using Resend HTTP API (Bypasses all Server/SMTP Firewalls completely)
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'api-key': apiKey
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        sender: {
-          name: 'Mind Haven Support',
-          email: senderEmail
-        },
-        to: [
-          { email: email }
-        ],
+        from: 'Mind Haven Recovery <onboarding@resend.dev>', // Resend demands this exact sender for free tier
+        to: email,
         subject: 'Your Mind Haven login code',
-        htmlContent: `<p>Your Mind Haven login code is <strong style="font-size: 1.2em;">${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
-        textContent: `Your Mind Haven login code is ${code}. It expires in 10 minutes.`
+        html: `<p>Your Mind Haven login code is <strong style="font-size: 1.2em;">${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
       })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Brevo HTTP Error ${response.status}: ${JSON.stringify(errorData)}`);
+      throw new Error(`Resend HTTP Error ${response.status}: ${JSON.stringify(errorData)}`);
     }
 
     return {
