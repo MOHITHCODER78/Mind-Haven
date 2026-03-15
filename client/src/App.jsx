@@ -17,6 +17,7 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminResourcesPage from './pages/AdminResourcesPage';
 import ChatPage from './pages/ChatPage';
 import AiAssistantPage from './pages/AiAssistantPage';
+import MoodTrackerPage from './pages/MoodTrackerPage';
 
 function App() {
   return (
@@ -32,7 +33,7 @@ function App() {
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route element={<StudentRoute />}>
           <Route path="/dashboard" element={<StudentDashboardPage />} />
-          <Route path="/mood-tracker" element={<StudentDashboardPage />} />
+          <Route path="/mood-tracker" element={<MoodTrackerPage />} />
           <Route path="/assistant" element={<AiAssistantPage />} />
         </Route>
         <Route element={<ProtectedRoute />}>

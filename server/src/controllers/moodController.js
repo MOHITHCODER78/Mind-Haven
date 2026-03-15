@@ -34,7 +34,7 @@ const getMoodLogs = async (req, res) => {
   const logs = await MoodLog.find({ user: req.user.id }).sort({ createdAt: -1 }).limit(14).lean();
 
   if (!logs.length) {
-    return res.json({ logs: fallbackMoodHistory, stats: { currentStreak: 5, averageMood: 3.6, sentimentSummary: { positive: 3, neutral: 3, negative: 1 } } });
+    return res.json({ logs: [], stats: { currentStreak: 0, averageMood: 0, sentimentSummary: { positive: 0, neutral: 0, negative: 0 } } });
   }
 
   const normalizedLogs = logs.map(normalizeMoodLog).reverse();
