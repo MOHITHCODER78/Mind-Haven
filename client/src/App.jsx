@@ -20,38 +20,42 @@ import AiAssistantPage from './pages/AiAssistantPage';
 import { AnimatePresence } from 'framer-motion';
 import MoodTrackerPage from './pages/MoodTrackerPage';
 import PageLoader from './components/shared/PageLoader';
+import NotFoundPage from './pages/NotFoundPage';
+import ErrorBoundary from './components/shared/ErrorBoundary';
 
 function App() {
   return (
-    <AnimatePresence mode="wait">
-      <PageLoader key="loader" />
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/resources" element={<ResourcesPage />} />
-          <Route path="/resources/:id" element={<ResourceArticlePage />} />
-          <Route path="/wall" element={<FeelingsWallPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/support/login" element={<SupportLoginPage />} />
-          <Route path="/admin/login" element={<AdminLoginPage />} />
-          <Route element={<StudentRoute />}>
-            <Route path="/dashboard" element={<StudentDashboardPage />} />
-            <Route path="/mood-tracker" element={<MoodTrackerPage />} />
-            <Route path="/assistant" element={<AiAssistantPage />} />
+    <ErrorBoundary>
+      <AnimatePresence mode="wait">
+        <PageLoader key="loader" />
+        <Routes>
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/resources" element={<ResourcesPage />} />
+            <Route path="/resources/:id" element={<ResourceArticlePage />} />
+            <Route path="/wall" element={<FeelingsWallPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/support/login" element={<SupportLoginPage />} />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route element={<StudentRoute />}>
+              <Route path="/dashboard" element={<StudentDashboardPage />} />
+              <Route path="/mood-tracker" element={<MoodTrackerPage />} />
+              <Route path="/assistant" element={<AiAssistantPage />} />
+            </Route>
+            <Route element={<ProtectedRoute />}>
+              <Route path="/chat" element={<ChatPage />} />
+            </Route>
+            <Route element={<AdminRoute />}>
+              <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/admin/users" element={<AdminUsersPage />} />
+              <Route path="/admin/resources" element={<AdminResourcesPage />} />
+            </Route>
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
-          <Route element={<ProtectedRoute />}>
-            <Route path="/chat" element={<ChatPage />} />
-          </Route>
-          <Route element={<AdminRoute />}>
-            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-            <Route path="/admin/users" element={<AdminUsersPage />} />
-            <Route path="/admin/resources" element={<AdminResourcesPage />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </AnimatePresence>
+        </Routes>
+      </AnimatePresence>
+    </ErrorBoundary>
   );
 }
 
