@@ -1,29 +1,13 @@
-const nodemailer = require('nodemailer');
-
 const isProduction = process.env.NODE_ENV === 'production';
 
-const getTransporter = () => {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_PORT || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    return null;
-  }
-
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT),
-    secure: Number(process.env.SMTP_PORT) === 465,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-};
-
 const sendOtpEmail = async ({ email, code }) => {
-  const transporter = getTransporter();
+  // We will now look for BREVO_API_KEY instead of SMTP credentials!
+  const apiKey = process.env.BREVO_API_KEY || process.env.SMTP_PASS; // Fallback to SMTP_PASS in case they put it there
+  const senderEmail = process.env.SMTP_FROM || process.env.SMTP_USER;
 
-  if (!transporter) {
+  if (!apiKey || !senderEmail) {
     if (isProduction) {
-      console.log('No SMTP config on Production. Returning preview code for portfolio testing.');
+      console.log('No Brevo API configuration on Production. Returning preview code for portfolio testing.');
       return {
         delivered: false,
         preview: code,
@@ -38,37 +22,46 @@ const sendOtpEmail = async ({ email, code }) => {
   }
 
   try {
-    const sendPromise = transporter.sendMail({
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
-      to: email,
-      subject: 'Your Mind Haven login code',
-      text: `Your Mind Haven login code is ${code}. It expires in 10 minutes.`,
-      html: `<p>Your Mind Haven login code is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
-    }).catch(err => {
-      throw err; // Force catch below to handle this
+    // This uses the native Fetch API (no nodemailer, no SMTP port firewalls!)
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': apiKey
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'Mind Haven Support',
+          email: senderEmail
+        },
+        to: [
+          { email: email }
+        ],
+        subject: 'Your Mind Haven login code',
+        htmlContent: `<p>Your Mind Haven login code is <strong style="font-size: 1.2em;">${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
+        textContent: `Your Mind Haven login code is ${code}. It expires in 10 minutes.`
+      })
     });
 
-    // Add a 5 second timeout so Render doesn't hang forever
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('SMTP timeout')), 5000)
-    );
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Brevo HTTP Error ${response.status}: ${JSON.stringify(errorData)}`);
+    }
 
-    await Promise.race([sendPromise, timeoutPromise]);
-
+    return {
+      delivered: true,
+      preview: null,
+    };
   } catch (error) {
-    console.error('OTP email delivery failed:', error.message);
+    console.error('OTP HTTP email delivery failed:', error.message);
 
-    // Fallback: If it's a portfolio project and Render blocks SMTP, return the code to the frontend!
+    // Fallback: Show onscreen preview code on failure
     return {
       delivered: false,
-      preview: code, // Return code so frontend shows it on screen
+      preview: code,
     };
   }
-
-  return {
-    delivered: true,
-    preview: null,
-  };
 };
 
 module.exports = {
