@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../context/useAuth';
-import loginSide from '../assets/images/login-side.png.png';
+import LoginIllustration from '../components/shared/illustrations/LoginIllustration';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -73,7 +73,7 @@ function LoginPage() {
             <h2>Access Mind Haven with secure email OTP.</h2>
             <p>Use your student email to enter your private wellness space and continue where you left off.</p>
           </div>
-          <img className="auth-illustration" src={loginSide} alt="Student sign in illustration" />
+          <LoginIllustration className="auth-illustration" />
           {showDevOtp ? (
             <div className="dev-otp-box">
               <span className="tag">Development preview</span>

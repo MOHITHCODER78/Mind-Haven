@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { resourceHighlights, wallHighlights } from '../data/mockData';
-import homeHero from '../assets/images/home-hero.png.png';
+import HeroIllustration from '../components/shared/illustrations/HeroIllustration';
 import SectionHeading from '../components/shared/SectionHeading';
 
 const faqs = [
@@ -57,7 +57,7 @@ function HomePage() {
           </div>
         </div>
         <div className="hero-card hero-visual-card">
-          <img className="section-illustration hero-illustration" src={homeHero} alt="Calm student wellness illustration" />
+          <HeroIllustration className="section-illustration hero-illustration" />
           <span className="status-pill">Live wellness features</span>
           <h3>Why this project stands out</h3>
           <ul className="feature-list">
