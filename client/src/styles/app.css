@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   color-scheme: light;
   --bg: #eef4f1;
   --surface: rgba(255, 253, 250, 0.96);
@@ -1044,7 +1044,7 @@ textarea:focus {
 
 
 /* -------------------------------------------------------
-   NOTION-INSPIRED OVERRIDES � Single clean layer
+   NOTION-INSPIRED OVERRIDES — Single clean layer
    ------------------------------------------------------- */
 
 /* -- Layout shell -- */
