@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mind-haven.vercel.app/sitemap.xml
+Sitemap: https://mind-haven-jade.vercel.app/sitemap.xml
