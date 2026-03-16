@@ -10,6 +10,8 @@ import {
 } from 'recharts';
 import { Reveal, HoverCard } from '../components/shared/Animations';
 import MoodAnalytics from '../components/shared/MoodAnalytics';
+import SectionHeading from '../components/shared/SectionHeading';
+import api from '../services/api';
 
 const moodOptions = [
     { score: 1, label: 'Low' },
