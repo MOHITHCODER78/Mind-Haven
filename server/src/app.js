@@ -14,6 +14,7 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://localhost:5174',
   process.env.CLIENT_URL,
+  'https://mind-haven-f2t4.vercel.app',
 ].filter(Boolean);
 
 app.use(
