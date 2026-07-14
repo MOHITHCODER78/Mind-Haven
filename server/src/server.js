@@ -3,8 +3,10 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const { Server } = require('socket.io');
 const app = require('./app');
+// Trust proxy for proper rate limiting on Render
+app.set('trust proxy', true);
+const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const { updatePresenceFromToken } = require('./controllers/chatController');
 const validateEnv = require('./utils/validateEnv');
