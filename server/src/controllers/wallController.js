@@ -145,8 +145,22 @@ const reportWallPost = async (req, res) => {
     return res.status(404).json({ message: 'Post not found.' });
   }
 
-  post.reportCount += 1;
-  if (post.reportCount >= 2 && post.status === 'published') {
+  if (post.user.toString() === req.user.id) {
+    return res.status(400).json({ message: 'You cannot report your own post.' });
+  }
+
+  if (!post.reportedBy) {
+    post.reportedBy = [];
+  }
+
+  if (post.reportedBy.includes(req.user.id)) {
+    return res.status(400).json({ message: 'You have already reported this post.' });
+  }
+
+  post.reportedBy.push(req.user.id);
+  post.reportCount = post.reportedBy.length;
+
+  if (post.reportCount >= 3 && post.status === 'published') {
     post.status = 'flagged';
     post.moderationReason = 'Community report threshold reached';
   }

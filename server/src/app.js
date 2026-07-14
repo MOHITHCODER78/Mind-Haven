@@ -5,20 +5,35 @@ const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 const apiRoutes = require('./routes');
 const errorHandler = require('./middleware/errorMiddleware');
+const { generalLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: true,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('CORS not allowed for this origin'));
+    },
     credentials: true,
   })
 );
 app.use(helmet());
 app.use(morgan('dev'));
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(generalLimiter);
 
 app.get('/', (_req, res) => {
   res.json({

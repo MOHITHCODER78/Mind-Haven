@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../context/useAuth';
-import dashboardBanner from '../assets/images/dashboard-banner.png.png';
+import { getPageImage } from '../data/visualAssets';
 
 function SupportLoginPage() {
   const navigate = useNavigate();
@@ -40,10 +40,12 @@ function SupportLoginPage() {
         <div className="auth-copy admin-auth-copy">
           <div className="auth-copy-body">
             <p className="eyebrow">Support access</p>
-            <h2>Open the counsellor and peer mentor workspace.</h2>
-            <p>Use your assigned Mind Haven work email and password to support students, manage follow-up, and review conversations.</p>
+            <h2>Open the support workspace for counsellors and peer mentors.</h2>
+            <p>Use your work email and password to review conversations, follow up with students, and keep support organized.</p>
           </div>
-          <img className="auth-illustration auth-illustration-support" src={dashboardBanner} alt="Support workspace illustration" />
+          <div className="auth-image-shell">
+            <img className="auth-image" src={getPageImage('supportLogin')} alt="Counsellor workspace with a laptop and notes" />
+          </div>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
@@ -55,7 +57,7 @@ function SupportLoginPage() {
             <span>Password</span>
             <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Enter your password" required />
           </label>
-          <p className="auth-helper-text">Support accounts are approved internally and use password login instead of student OTP.</p>
+          <p className="auth-helper-text">Support accounts use password sign in instead of student verification codes.</p>
           {message ? <p className="form-success">{message}</p> : null}
           {error ? <p className="form-error">{error}</p> : null}
           <button className="button primary auth-submit" type="submit" disabled={submitting}>

@@ -8,6 +8,7 @@ const {
   updateConversationStatus,
 } = require('../controllers/chatController');
 const { protect } = require('../middleware/authMiddleware');
+const { validate } = require('../middleware/validationMiddleware');
 
 const router = express.Router();
 
@@ -20,10 +21,11 @@ router.post(
     body('topic').trim().notEmpty().withMessage('Please enter a conversation topic.'),
     body('assignedRole').optional().isIn(['counsellor', 'peer_mentor']).withMessage('Please choose a valid support role.'),
   ],
+  validate,
   createConversation
 );
 router.get('/conversations/:id/messages', getMessages);
-router.post('/conversations/:id/messages', [body('content').trim().notEmpty()], createMessage);
-router.patch('/conversations/:id/status', [body('status').isIn(['open', 'closed'])], updateConversationStatus);
+router.post('/conversations/:id/messages', [body('content').trim().notEmpty()], validate, createMessage);
+router.patch('/conversations/:id/status', [body('status').isIn(['open', 'closed'])], validate, updateConversationStatus);
 
 module.exports = router;

@@ -48,10 +48,33 @@ const getMoodLogs = async (req, res) => {
     { positive: 0, neutral: 0, negative: 0 }
   );
 
+  // Calculate consecutive-day streak from most recent log backwards
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  let streak = 0;
+  let cursor = today.getTime();
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  const logsByDay = new Set(
+    logs.map((log) => {
+      const d = new Date(log.createdAt);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime();
+    })
+  );
+
+  // Allow streak starting today or yesterday (if not yet logged today)
+  if (!logsByDay.has(cursor)) {
+    cursor -= oneDayMs;
+  }
+  while (logsByDay.has(cursor)) {
+    streak += 1;
+    cursor -= oneDayMs;
+  }
+
   return res.json({
     logs: normalizedLogs,
     stats: {
-      currentStreak: normalizedLogs.length,
+      currentStreak: streak,
       averageMood,
       sentimentSummary,
     },

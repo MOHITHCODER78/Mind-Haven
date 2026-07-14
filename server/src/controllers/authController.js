@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const User = require('../models/User');
 const Otp = require('../models/Otp');
 const generateToken = require('../utils/generateToken');
+const generateRefreshToken = require('../utils/generateRefreshToken');
 const { sendOtpEmail } = require('../utils/email');
 
 const OTP_TTL_MINUTES = 10;
@@ -15,22 +16,42 @@ const DEFAULT_MENTOR_EMAIL = 'mentor@mindhaven.app';
 const DEFAULT_ADMIN_PASSWORD = process.env.DEFAULT_ADMIN_PASSWORD || 'Admin@123456';
 const DEFAULT_SUPPORT_PASSWORD = process.env.DEFAULT_SUPPORT_PASSWORD || 'Support@123456';
 
-const buildAuthResponse = (user) => ({
-  message: 'Authentication successful.',
-  user: {
+const buildAuthResponse = async (user, res) => {
+  const token = generateToken({
     id: user._id ? user._id.toString() : user.id,
     name: user.name,
     email: user.email,
     role: user.role,
-    isVerified: user.isVerified ?? true,
-  },
-  token: generateToken({
-    id: user._id ? user._id.toString() : user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  }),
-});
+  });
+
+  let refreshToken = null;
+  try {
+    refreshToken = await generateRefreshToken(user._id || user.id);
+  } catch (refreshError) {
+    // Do not block login if refresh token generation fails.
+  }
+
+  if (refreshToken) {
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+  }
+
+  return {
+    message: 'Authentication successful.',
+    user: {
+      id: user._id ? user._id.toString() : user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified ?? true,
+    },
+    token,
+  };
+};
 
 const getValidationMessage = (req) => {
   const errors = validationResult(req);
@@ -129,11 +150,6 @@ const respondWithOtpIssue = (res, result) => {
 };
 
 const sendOtp = async (req, res) => {
-  const validationMessage = getValidationMessage(req);
-  if (validationMessage) {
-    return res.status(400).json({ message: validationMessage });
-  }
-
   const result = await issueOtp({ ...req.body, role: 'student', createIfMissing: true });
   return respondWithOtpIssue(res, result);
 };
@@ -190,7 +206,7 @@ const loginStaff = async ({ email, password, allowedRoles, deniedMessage }) => {
     return { user: fallbackUser };
   }
 
-  const user = await User.findOne({ email: normalizedEmail });
+  const user = await User.findOne({ email: normalizedEmail }).select('+password');
   if (!user || !allowedRoles.includes(user.role)) {
     return {
       error: {
@@ -223,11 +239,6 @@ const loginStaff = async ({ email, password, allowedRoles, deniedMessage }) => {
 };
 
 const loginAdmin = async (req, res) => {
-  const validationMessage = getValidationMessage(req);
-  if (validationMessage) {
-    return res.status(400).json({ message: validationMessage });
-  }
-
   const result = await loginStaff({
     email: req.body.email,
     password: req.body.password,
@@ -239,15 +250,11 @@ const loginAdmin = async (req, res) => {
     return res.status(result.error.status).json({ message: result.error.message });
   }
 
-  return res.json(buildAuthResponse(result.user));
+  const response = await buildAuthResponse(result.user, res);
+  return res.json(response);
 };
 
 const loginSupport = async (req, res) => {
-  const validationMessage = getValidationMessage(req);
-  if (validationMessage) {
-    return res.status(400).json({ message: validationMessage });
-  }
-
   const result = await loginStaff({
     email: req.body.email,
     password: req.body.password,
@@ -259,15 +266,11 @@ const loginSupport = async (req, res) => {
     return res.status(result.error.status).json({ message: result.error.message });
   }
 
-  return res.json(buildAuthResponse(result.user));
+  const response = await buildAuthResponse(result.user, res);
+  return res.json(response);
 };
 
 const verifyOtp = async (req, res) => {
-  const validationMessage = getValidationMessage(req);
-  if (validationMessage) {
-    return res.status(400).json({ message: validationMessage });
-  }
-
   const { email, code, name, role = 'student' } = req.body;
   const normalizedEmail = email.toLowerCase().trim();
 
@@ -322,20 +325,21 @@ const verifyOtp = async (req, res) => {
       isVerified: true,
     });
   } else {
+    if (user.role !== 'student') {
+      return res.status(403).json({ message: 'This email is registered for staff access. Please use the staff login portal.' });
+    }
     if (!user.isVerified) {
       user.isVerified = true;
     }
     if (!user.name && name) {
       user.name = name;
     }
-    if (user.role !== 'student') {
-      user.role = 'student';
-    }
     await user.save();
   }
 
   await Otp.deleteMany({ email: normalizedEmail, purpose: 'login' });
-  return res.json(buildAuthResponse(user));
+  const response = await buildAuthResponse(user, res);
+  return res.json(response);
 };
 
 const getCurrentUser = async (req, res) => {

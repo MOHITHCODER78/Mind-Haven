@@ -1,5 +1,5 @@
 ﻿import { Link } from 'react-router-dom';
-import registerSide from '../assets/images/register-side.png.png';
+import { getPageImage } from '../data/visualAssets';
 
 function RegisterPage() {
   return (
@@ -13,7 +13,9 @@ function RegisterPage() {
             Mind Haven uses passwordless email OTP for students so onboarding stays simple, secure, and easy to complete during stressful periods.
           </p>
           </div>
-          <img className="auth-illustration" src={registerSide} alt="Student onboarding illustration" />
+          <div className="auth-image-shell">
+            <img className="auth-image" src={getPageImage('register')} alt="Student starting onboarding on a laptop" />
+          </div>
         </div>
         <div className="auth-form auth-static">
           <p>

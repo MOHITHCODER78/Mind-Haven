@@ -21,7 +21,7 @@ const seedSupportUsers = async () => {
   const supportPassword = process.env.DEFAULT_SUPPORT_PASSWORD || 'Support@123456';
 
   for (const seedUser of supportUsers) {
-    let user = await User.findOne({ email: seedUser.email });
+    let user = await User.findOne({ email: seedUser.email }).select('+password');
 
     if (!user) {
       user = new User({

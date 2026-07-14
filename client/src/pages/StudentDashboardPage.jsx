@@ -1,45 +1,43 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Area,
-  AreaChart,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from 'recharts';
 import SectionHeading from '../components/shared/SectionHeading';
 import useAuth from '../context/useAuth';
 import api from '../services/api';
 import { Reveal, HoverCard } from '../components/shared/Animations';
 import { Calendar, MessageSquare, BookOpen, BarChart3, Heart, Zap } from 'lucide-react';
+import RecommendationCard from '../components/shared/MemoizedResources';
+
+const AreaChart = lazy(() => import('recharts').then(module => ({ default: module.AreaChart })));
+const Area = lazy(() => import('recharts').then(module => ({ default: module.Area })));
+const ResponsiveContainer = lazy(() => import('recharts').then(module => ({ default: module.ResponsiveContainer })));
+const XAxis = lazy(() => import('recharts').then(module => ({ default: module.XAxis })));
+const YAxis = lazy(() => import('recharts').then(module => ({ default: module.YAxis })));
 
 function StudentDashboardPage() {
   const { user } = useAuth();
   const [logs, setLogs] = useState([]);
   const [stats, setStats] = useState({ currentStreak: 0, averageMood: 0, sentimentSummary: { positive: 0, neutral: 0, negative: 0 } });
   const [recommendations, setRecommendations] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   const fetchDashboardData = async () => {
-    setLoading(true);
     try {
       const [moodsResponse, recommendationsResponse] = await Promise.all([
-        api.get('/moods'),
-        api.get('/resources/recommendations'),
+        api.get('/api/moods'),
+        api.get('/api/resources/recommendations'),
       ]);
       setLogs(moodsResponse.data.logs || []);
       setStats(moodsResponse.data.stats || { currentStreak: 0, averageMood: 0, sentimentSummary: { positive: 0, neutral: 0, negative: 0 } });
       setRecommendations(recommendationsResponse.data.recommendations || []);
-    } catch (err) {
+    // eslint-disable-next-line no-unused-vars
+    } catch (_err) {
       console.error('Data sync failed');
-    } finally {
-      setLoading(false);
     }
   };
 
+   
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    fetchDashboardData(); // eslint-disable-line react-hooks/set-state-in-effect
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="page-stack">
@@ -51,18 +49,18 @@ function StudentDashboardPage() {
           )}
 
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <p className="eyebrow" style={{ color: 'var(--primary)', fontWeight: 600 }}>Student Overview</p>
+            <p className="eyebrow" style={{ color: 'var(--primary)', fontWeight: 600 }}>Your space</p>
             <h2 style={{ fontSize: '2.5rem', marginTop: '0.5rem' }}>Welcome back, {user?.name.split(' ')[0]}</h2>
-            <p style={{ fontSize: '1.1rem', color: 'var(--muted)' }}>Here is a summary of your recent wellness journey.</p>
+            <p style={{ fontSize: '1.1rem', color: 'var(--muted)' }}>A quick look at how you have been feeling and a few ideas for what might help next.</p>
 
             <div className="metrics-grid" style={{ marginTop: '2rem', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
               <Reveal delay={0.1} y={15}>
                 <HoverCard>
                   <div className="metric-card" style={{ padding: '1.5rem', background: '#fff', border: stats.currentStreak > 0 ? '1.5px solid rgba(47, 124, 113, 0.2)' : '' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: stats.currentStreak > 0 ? 'var(--primary)' : 'inherit' }}>
-                      {stats.currentStreak > 0 ? <Zap size={18} fill="currentColor" /> : <Calendar size={18} />} Streak
+                      {stats.currentStreak > 0 ? <Zap size={18} fill="currentColor" /> : <Calendar size={18} />} Check-in streak
                     </span>
-                    <strong>{stats.currentStreak} Days</strong>
+                    <strong>{stats.currentStreak} days</strong>
                   </div>
                 </HoverCard>
               </Reveal>
@@ -70,7 +68,7 @@ function StudentDashboardPage() {
                 <HoverCard>
                   <div className="metric-card" style={{ padding: '1.5rem', background: '#fff' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Heart size={18} /> Avg Mood
+                      <Heart size={18} /> Mood average
                     </span>
                     <strong>{stats.averageMood} / 5</strong>
                   </div>
@@ -80,7 +78,7 @@ function StudentDashboardPage() {
                 <HoverCard>
                   <div className="metric-card" style={{ padding: '1.5rem', background: '#fff' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <BarChart3 size={18} /> Logs
+                      <BarChart3 size={18} /> Entries
                     </span>
                     <strong>{logs.length}</strong>
                   </div>
@@ -95,51 +93,53 @@ function StudentDashboardPage() {
         {/* ── Recent Trend (Visual Snippet) ── */}
         <Reveal delay={0.2} path="left">
           <div className="panel chart-panel">
-            <SectionHeading title="Recent Trend" description="Your emotional pulse over the last 7 days." />
+            <SectionHeading title="Recent trend" description="Your mood over the past week." />
             <div className="chart-wrap" style={{ height: '180px', marginTop: '1rem', opacity: logs.length ? 1 : 0.3 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={logs.slice(-7).map(l => ({ mood: l.moodScore }))}>
-                  <Area type="monotone" dataKey="mood" stroke="#2f7c71" fill="#2f7c71" fillOpacity={0.1} strokeWidth={2} />
-                  <YAxis domain={[1, 5]} hide />
-                  <XAxis hide />
-                </AreaChart>
-              </ResponsiveContainer>
-              {!logs.length && <p style={{ textAlign: 'center', marginTop: '-100px', fontWeight: 600 }}>No logs yet</p>}
+              <Suspense fallback={<div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading chart...</div>}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={logs.slice(-7).map(l => ({ mood: l.moodScore }))}>
+                    <Area type="monotone" dataKey="mood" stroke="#2f7c71" fill="#2f7c71" fillOpacity={0.1} strokeWidth={2} />
+                    <YAxis domain={[1, 5]} hide />
+                    <XAxis hide />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </Suspense>
+              {!logs.length && <p style={{ textAlign: 'center', marginTop: '-100px', fontWeight: 600 }}>No entries yet</p>}
             </div>
-            <Link to="/mood-tracker" className="button secondary" style={{ width: '100%', marginTop: '1.5rem' }}>View Detail Tracker</Link>
+            <Link to="/mood-tracker" className="button secondary" style={{ width: '100%', marginTop: '1.5rem' }}>Open tracker</Link>
           </div>
         </Reveal>
 
         {/* ── Quick Actions ── */}
         <Reveal delay={0.3} path="right">
           <div className="panel" style={{ display: 'grid', gap: '1rem', alignContent: 'start' }}>
-            <SectionHeading title="Quick Links" description="Most used tools by students." />
+            <SectionHeading title="Quick links" description="A few places to start when you are ready." />
             <div style={{ display: 'grid', gap: '0.75rem' }}>
               <HoverCard>
                 <Link to="/mood-tracker" className="assistant-prompt-button" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <Calendar size={20} color="var(--primary)" />
-                  <div>
-                    <strong>Daily Check-in</strong>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Log your mood for today</p>
-                  </div>
+                      <div>
+                        <strong>Daily check-in</strong>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Add a short note about how you are feeling</p>
+                      </div>
                 </Link>
               </HoverCard>
               <HoverCard>
                 <Link to="/assistant" className="assistant-prompt-button" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <MessageSquare size={20} color="var(--primary)" />
-                  <div>
-                    <strong>Talk to AI Assistant</strong>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Get instant emotional support</p>
-                  </div>
+                      <div>
+                        <strong>Open assistant</strong>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Talk through something when you need a moment to slow down</p>
+                      </div>
                 </Link>
               </HoverCard>
               <HoverCard>
                 <Link to="/resources" className="assistant-prompt-button" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <BookOpen size={20} color="var(--primary)" />
-                  <div>
-                    <strong>Browse Resources</strong>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Read mental wellness guides</p>
-                  </div>
+                      <div>
+                        <strong>Browse resources</strong>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Find practical guides and short reads</p>
+                      </div>
                 </Link>
               </HoverCard>
             </div>
@@ -150,24 +150,14 @@ function StudentDashboardPage() {
       {/* ── Top Recommendations ── */}
       <Reveal delay={0.4}>
         <section className="panel compact-panel">
-          <SectionHeading
-            title="Recommended for You"
-            description="Curated based on your recent activity."
-          />
+            <SectionHeading title="For you" description="A few suggestions based on what you have been exploring." />
           <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
             {recommendations.slice(0, 3).map((resource, idx) => (
               <Reveal key={resource.id} delay={0.1 * idx} y={20}>
-                <HoverCard>
-                  <article className="info-card resource-card">
-                    <span className="tag">{resource.category.replace('_', ' ')}</span>
-                    <h3 style={{ marginTop: '0.5rem' }}>{resource.title}</h3>
-                    <p style={{ fontSize: '0.9rem' }}>{resource.summary}</p>
-                    <Link className="text-button" to={`/resources/${resource.id}`} style={{ marginTop: 'auto' }}>Read Article</Link>
-                  </article>
-                </HoverCard>
+                <RecommendationCard resource={resource} index={idx} />
               </Reveal>
             ))}
-            {!recommendations.length && <p>Log some moods to get personalized recommendations!</p>}
+            {!recommendations.length && <p>Keep checking in and we will suggest things that might help.</p>}
           </div>
         </section>
       </Reveal>

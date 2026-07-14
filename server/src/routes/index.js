@@ -6,6 +6,8 @@ const wallRoutes = require('./wallRoutes');
 const adminRoutes = require('./adminRoutes');
 const chatRoutes = require('./chatRoutes');
 const assistantRoutes = require('./assistantRoutes');
+const legalRoutes = require('./legalRoutes');
+const { generalLimiter } = require('../middleware/rateLimiter');
 
 const router = express.Router();
 
@@ -13,9 +15,11 @@ router.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
     message: 'Mental Health Support Platform API is running.',
+    timestamp: new Date().toISOString(),
   });
 });
 
+router.use(generalLimiter);
 router.use('/auth', authRoutes);
 router.use('/resources', resourceRoutes);
 router.use('/moods', moodRoutes);
@@ -23,7 +27,7 @@ router.use('/wall', wallRoutes);
 router.use('/admin', adminRoutes);
 router.use('/chat', chatRoutes);
 router.use('/assistant', assistantRoutes);
+router.use('/legal', legalRoutes);
 
 module.exports = router;
-
 

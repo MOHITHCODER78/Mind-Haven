@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { getResourceCoverImage } from '../data/visualAssets';
 import api from '../services/api';
 import { getEmbedUrl, getYouTubeThumbnail } from '../utils/video';
 
@@ -42,7 +43,7 @@ function ResourceArticlePage() {
 
   const mediaUrl = resource.videoUrl || resource.url || '';
   const embedUrl = resource.type === 'video' ? getEmbedUrl(mediaUrl) : '';
-  const thumbnail = resource.thumbnailUrl || (resource.type === 'video' ? getYouTubeThumbnail(mediaUrl) : '');
+  const thumbnail = resource.thumbnailUrl || (resource.type === 'video' ? getYouTubeThumbnail(mediaUrl) : getResourceCoverImage(resource.category));
 
   return (
     <article className="page-stack article-shell">
@@ -60,6 +61,11 @@ function ResourceArticlePage() {
             <span>{resource.type}</span>
           </div>
         </div>
+        {thumbnail ? (
+          <div className="article-cover-shell">
+            <img className="article-cover-image" src={thumbnail} alt={resource.title} />
+          </div>
+        ) : null}
       </section>
 
       {resource.category === 'suicide_support' ? (

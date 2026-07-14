@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../context/useAuth';
-import LoginIllustration from '../components/shared/illustrations/LoginIllustration';
+import { getPageImage } from '../data/visualAssets';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -70,10 +70,12 @@ function LoginPage() {
         <div className="auth-copy">
           <div className="auth-copy-body">
             <p className="eyebrow">Student sign in</p>
-            <h2>Access Mind Haven with secure email OTP.</h2>
-            <p>Use your student email to enter your private wellness space and continue where you left off.</p>
+            <h2>Open your private workspace.</h2>
+            <p>Enter your email and we will send a short verification code to get you in.</p>
           </div>
-          <LoginIllustration className="auth-illustration" />
+          <div className="auth-image-shell">
+            <img className="auth-image" src={getPageImage('studentLogin')} alt="Student workspace with a laptop and notebook" />
+          </div>
           {showDevOtp ? (
             <div className="dev-otp-box">
               <span className="tag">Development preview</span>
@@ -86,17 +88,17 @@ function LoginPage() {
           <form className="auth-form" onSubmit={handleSendOtp}>
             <label>
               <span>Full name</span>
-              <input type="text" name="name" value={requestForm.name} onChange={handleRequestChange} placeholder="Enter your full name" required />
+              <input type="text" name="name" value={requestForm.name} onChange={handleRequestChange} placeholder="Your name" required />
             </label>
             <label>
               <span>Student email</span>
-              <input type="email" name="email" value={requestForm.email} onChange={handleRequestChange} placeholder="you@college.edu" required />
+              <input type="email" name="email" value={requestForm.email} onChange={handleRequestChange} placeholder="you@institution.edu" required />
             </label>
-            <p className="auth-helper-text">We will send a 6-digit verification code to your inbox.</p>
+            <p className="auth-helper-text">We will send a 6-digit code to your inbox.</p>
             {error ? <p className="form-error">{error}</p> : null}
             {successMessage ? <p className="form-success">{successMessage}</p> : null}
             <button className="button primary auth-submit" type="submit" disabled={sending}>
-              {sending ? 'Sending...' : 'Send OTP'}
+              {sending ? 'Sending code...' : 'Send code'}
             </button>
           </form>
         ) : (
@@ -107,15 +109,15 @@ function LoginPage() {
             </label>
             <label>
               <span>OTP</span>
-              <input type="text" inputMode="numeric" maxLength="6" value={otpCode} onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="Enter 6-digit OTP" required />
+              <input type="text" inputMode="numeric" maxLength="6" value={otpCode} onChange={(event) => setOtpCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="Enter verification code" required />
             </label>
             {error ? <p className="form-error">{error}</p> : null}
             {successMessage ? <p className="form-success">{successMessage}</p> : null}
             <button className="button primary auth-submit" type="submit" disabled={verifying}>
-              {verifying ? 'Verifying...' : 'Verify OTP'}
+              {verifying ? 'Checking code...' : 'Verify'}
             </button>
             <button type="button" className="text-button" onClick={handleUseDifferentEmail}>
-              Change email
+              Use a different email
             </button>
           </form>
         )}

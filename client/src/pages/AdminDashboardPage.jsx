@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Bar, BarChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from 'recharts';
 import SectionHeading from '../components/shared/SectionHeading';
 import api from '../services/api';
+import { getResourceCoverImage } from '../data/visualAssets';
 
 const chartColors = ['#2f7c71', '#73a88b', '#d6a26f', '#c96b63'];
 
@@ -61,10 +62,10 @@ function AdminDashboardPage() {
       <section className="panel admin-overview-panel">
         <SectionHeading
           eyebrow="Admin dashboard"
-          title="Moderation, content, and engagement in one place"
-          description="This is now a working admin workspace with clickable sections, charts, and moderation actions."
+          title="A clear view of users, resources, and moderation"
+          description="Use this workspace to review activity, keep content up to date, and handle flagged posts without switching screens."
         />
-        {loading ? <p>Loading admin overview...</p> : null}
+        {loading ? <p>Loading dashboard data...</p> : null}
         {!loading && error ? <p className="form-error">{error}</p> : null}
         {!loading && !error && overview ? (
           <>
@@ -80,19 +81,19 @@ function AdminDashboardPage() {
             </div>
             <div className="admin-shortcuts">
               <Link className="admin-shortcut-card" to="/admin/users">
-                <strong>Manage Users</strong>
+                <strong>Users</strong>
                 <span>Review roles, verification, and account activity.</span>
               </Link>
               <Link className="admin-shortcut-card" to="/admin/resources">
-                <strong>Manage Resources</strong>
-                <span>Add, remove, and maintain article content.</span>
+                <strong>Resources</strong>
+                <span>Add, remove, and update article content.</span>
               </Link>
               <Link className="admin-shortcut-card" to="/chat">
-                <strong>Support Inbox</strong>
-                <span>Access all active student chats and moderate conversations.</span>
+                <strong>Support inbox</strong>
+                <span>Review active student chats and keep follow-ups organized.</span>
               </Link>
               <Link className="admin-shortcut-card" to="/admin/dashboard#moderation">
-                <strong>Moderation Queue</strong>
+                <strong>Moderation queue</strong>
                 <span>Review flagged content from the Feelings Wall.</span>
               </Link>
             </div>
@@ -106,7 +107,7 @@ function AdminDashboardPage() {
             <SectionHeading
               eyebrow="Role distribution"
               title="User mix by role"
-              description="A quick distribution view of students and support-side accounts."
+              description="A quick view of how many students, support staff, and admins are currently in the system."
             />
             <div className="admin-chart-wrap">
               <ResponsiveContainer width="100%" height={260}>
@@ -157,7 +158,7 @@ function AdminDashboardPage() {
             <SectionHeading
               eyebrow="Flagged posts"
               title="Items waiting for moderation"
-              description="These are the posts that crossed safety or report thresholds and should be reviewed first."
+              description="These posts crossed a report or safety threshold and should be reviewed first."
             />
             {moderationMessage ? <p className="form-success">{moderationMessage}</p> : null}
             <div className="admin-list-grid">
@@ -182,7 +183,7 @@ function AdminDashboardPage() {
             <SectionHeading
               eyebrow="Top resources"
               title="Most visible support content"
-              description="These cards now link into the actual resource library where relevant."
+              description="These cards link back to the resource library when the item is editable or public."
             />
             <div className="admin-list-grid">
               {overview.topResources.map((resource) => (
@@ -190,6 +191,13 @@ function AdminDashboardPage() {
                   <div className="resource-card-top">
                     <span className="tag">{resource.category || 'resource'}</span>
                     <span className="muted-inline">{resource.viewCount} views</span>
+                  </div>
+                  <div className="resource-thumbnail-wrap resource-thumbnail-compact">
+                    <img
+                      className="resource-thumbnail"
+                      src={resource.thumbnailUrl || getResourceCoverImage(resource.category)}
+                      alt={resource.title}
+                    />
                   </div>
                   <h3>{resource.title}</h3>
                   <p>{resource.sourceName}</p>

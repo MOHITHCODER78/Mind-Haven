@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useAuth from '../context/useAuth';
-import homeHero from '../assets/images/home-hero.png.png';
+import { getPageImage } from '../data/visualAssets';
 
 function AdminLoginPage() {
   const navigate = useNavigate();
@@ -41,9 +41,11 @@ function AdminLoginPage() {
           <div className="auth-copy-body">
             <p className="eyebrow">Admin access</p>
             <h2>Sign in to the moderation and analytics workspace.</h2>
-            <p>Use your assigned Mind Haven admin email and password to manage resources, moderation, and platform operations.</p>
+            <p>Use your admin email and password to manage users, resources, moderation, and platform operations.</p>
           </div>
-          <img className="auth-illustration auth-illustration-admin" src={homeHero} alt="Admin workspace illustration" />
+          <div className="auth-image-shell">
+            <img className="auth-image" src={getPageImage('adminLogin')} alt="Admin reviewing analytics on a laptop" />
+          </div>
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
@@ -55,7 +57,7 @@ function AdminLoginPage() {
             <span>Password</span>
             <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Enter your password" required />
           </label>
-          <p className="auth-helper-text">Admin accounts are managed internally and do not use student OTP login.</p>
+          <p className="auth-helper-text">Admin accounts use password sign in instead of student verification codes.</p>
           {message ? <p className="form-success">{message}</p> : null}
           {error ? <p className="form-error">{error}</p> : null}
           <button className="button primary auth-submit" type="submit" disabled={submitting}>

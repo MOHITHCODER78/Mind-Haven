@@ -41,6 +41,12 @@ const wallPostSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    reportedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     moderationReason: {
       type: String,
       default: '',

@@ -7,6 +7,7 @@ const {
   reportWallPost,
 } = require('../controllers/wallController');
 const { protect } = require('../middleware/authMiddleware');
+const { validate } = require('../middleware/validationMiddleware');
 
 const router = express.Router();
 
@@ -20,9 +21,10 @@ router.post(
       .isIn(['exam_stress', 'anxiety', 'burnout', 'depression', 'loneliness', 'heartbreak', 'motivation', 'placements'])
       .withMessage('Please choose a valid feeling tag.'),
   ],
+  validate,
   createWallPost
 );
-router.post('/:id/react', protect, [body('reaction').notEmpty()], reactToWallPost);
+router.post('/:id/react', protect, [body('reaction').notEmpty()], validate, reactToWallPost);
 router.post('/:id/report', protect, reportWallPost);
 
 module.exports = router;

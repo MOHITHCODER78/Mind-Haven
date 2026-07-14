@@ -14,4 +14,9 @@ router.get('/users', protect, authorize('admin'), getAdminUsers);
 router.get('/resources', protect, authorize('admin'), getAdminResources);
 router.patch('/wall/:id/status', protect, authorize('admin'), updateWallPostStatus);
 
+// Temporary debugging endpoint to verify admin access
+router.get('/ping', protect, authorize('admin'), (_req, res) => {
+  res.json({ message: 'Admin access verified.' });
+});
+
 module.exports = router;

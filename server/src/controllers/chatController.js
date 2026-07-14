@@ -1,4 +1,4 @@
-﻿const jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const ChatConversation = require('../models/ChatConversation');
 const ChatMessage = require('../models/ChatMessage');
@@ -142,6 +142,10 @@ const getMessages = async (req, res) => {
   const conversation = await ChatConversation.findById(req.params.id)
     .populate('student', 'name email')
     .populate('assignedSupport', 'name email availabilityStatus lastSeenAt');
+  if (!conversation) {
+    return res.status(404).json({ message: 'Conversation not found.' });
+  }
+
   if (!canAccessConversation(conversation, req.user)) {
     return res.status(403).json({ message: 'You do not have access to this conversation.' });
   }
@@ -180,6 +184,10 @@ const createMessage = async (req, res) => {
   }
 
   const conversation = await ChatConversation.findById(req.params.id);
+  if (!conversation) {
+    return res.status(404).json({ message: 'Conversation not found.' });
+  }
+
   if (!canAccessConversation(conversation, req.user)) {
     return res.status(403).json({ message: 'You do not have access to this conversation.' });
   }
@@ -209,14 +217,28 @@ const createMessage = async (req, res) => {
   }
   await conversation.save();
 
+  const chatMessage = {
+    id: message._id.toString(),
+    senderRole: message.senderRole,
+    content: message.content,
+    createdAt: message.createdAt,
+  };
+
+  const io = req.app.get('io');
+  if (io) {
+    io.to(conversation._id.toString()).emit('receive-support-message', {
+      conversationId: conversation._id.toString(),
+      message: chatMessage,
+    });
+    io.to('support-global').emit('receive-support-message', {
+      conversationId: conversation._id.toString(),
+      message: chatMessage,
+    });
+  }
+
   return res.status(201).json({
     message: 'Message sent.',
-    chatMessage: {
-      id: message._id.toString(),
-      senderRole: message.senderRole,
-      content: message.content,
-      createdAt: message.createdAt,
-    },
+    chatMessage,
     conversation: {
       id: conversation._id.toString(),
       unreadForStudent: conversation.unreadForStudent,
@@ -243,6 +265,10 @@ const updateConversationStatus = async (req, res) => {
   const conversation = await ChatConversation.findById(req.params.id)
     .populate('student', 'name email')
     .populate('assignedSupport', 'name email availabilityStatus lastSeenAt');
+  if (!conversation) {
+    return res.status(404).json({ message: 'Conversation not found.' });
+  }
+
   if (!canAccessConversation(conversation, req.user)) {
     return res.status(403).json({ message: 'You do not have access to this conversation.' });
   }
@@ -250,6 +276,24 @@ const updateConversationStatus = async (req, res) => {
   conversation.status = status;
   conversation.closedByRole = status === 'closed' ? req.user.role : '';
   await conversation.save();
+
+  const io = req.app.get('io');
+  if (io) {
+    io.to(conversation._id.toString()).emit('receive-support-message', {
+      conversationId: conversation._id.toString(),
+      statusUpdate: {
+        status: conversation.status,
+        closedByRole: conversation.closedByRole,
+      },
+    });
+    io.to('support-global').emit('receive-support-message', {
+      conversationId: conversation._id.toString(),
+      statusUpdate: {
+        status: conversation.status,
+        closedByRole: conversation.closedByRole,
+      },
+    });
+  }
 
   return res.json({
     message: status === 'closed' ? 'Conversation closed.' : 'Conversation reopened.',
@@ -263,7 +307,12 @@ const updatePresenceFromToken = async (token, status) => {
   }
 
   try {
-    const secret = process.env.JWT_SECRET || 'development-secret';
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+      return null;
+    }
+
     const decoded = jwt.verify(token, secret);
     const user = await User.findById(decoded.id);
     if (!user) {

@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import {
   BookOpen,
   Bot,
@@ -79,8 +79,8 @@ const footerColumns = [
   {
     title: 'Legal',
     items: [
-      { type: 'static', label: 'Privacy & safety' },
-      { type: 'static', label: 'Terms of use' },
+      { type: 'internal', label: 'Privacy Policy', to: '/privacy-policy' },
+      { type: 'internal', label: 'Terms of Use', to: '/terms' },
     ],
   },
 ];
@@ -102,7 +102,7 @@ function MainLayout() {
     <div className="app-shell">
       <header className="topbar">
         <div className="topbar-brand">
-          <p className="eyebrow">Student mental wellness platform</p>
+          <p className="eyebrow">Student mental health support</p>
           <Link to="/" className="brand-link">
             <h1 className="brand">Mind Haven</h1>
           </Link>
@@ -125,15 +125,15 @@ function MainLayout() {
           })}
 
           {user ? (
-            <button type="button" className="nav-button" onClick={logout}>
+            <button type="button" className="nav-button nav-signout" onClick={logout}>
               <LogOut size={16} strokeWidth={2.2} />
-              <span>Logout</span>
+              <span>Sign out</span>
             </button>
           ) : (
-            <>
+            <div className="nav-auth-actions">
               <Link className="nav-link" to="/login">
                 <UserRound size={16} strokeWidth={2.2} />
-                <span>Student</span>
+                <span>Sign in</span>
               </Link>
               <Link className="nav-link" to="/support/login">
                 <MessagesSquare size={16} strokeWidth={2.2} />
@@ -143,11 +143,11 @@ function MainLayout() {
                 <Shield size={16} strokeWidth={2.2} />
                 <span>Admin</span>
               </Link>
-              <Link className="nav-link active" to="/register">
+              <Link className="nav-link nav-cta" to="/register">
                 <Sparkles size={16} strokeWidth={2.2} />
-                <span>Get Started</span>
+                <span>Get started</span>
               </Link>
-            </>
+            </div>
           )}
         </nav>
       </header>
@@ -175,7 +175,7 @@ function MainLayout() {
                 <strong>Mind Haven</strong>
               </div>
               <p>
-                Empowering students with a calmer digital space for mood check-ins, guided support, trusted resources, and safe conversations.
+                A calm, private space for mood check-ins, practical resources, support conversations, and steady daily habits.
               </p>
               <a className="footer-contact-link" href="mailto:support@mindhaven.app">
                 <Mail size={18} strokeWidth={2.1} />
@@ -220,19 +220,19 @@ function MainLayout() {
 
           <div className="site-footer-newsletter">
             <div>
-              <h3>Stay Updated</h3>
-              <p>Get new wellness resources, support ideas, and platform updates delivered to your inbox.</p>
+              <h3>Stay updated</h3>
+              <p>Get occasional product updates, new resources, and support notes delivered to your inbox.</p>
             </div>
             <div className="site-footer-subscribe">
-              <input type="email" placeholder="Enter your email" aria-label="Email for updates" />
-              <button type="button" className="site-footer-subscribe-button">Subscribe</button>
+              <input type="email" placeholder="Email address" aria-label="Email for updates" />
+              <button type="button" className="site-footer-subscribe-button">Join list</button>
             </div>
           </div>
         </div>
 
         <div className="site-footer-bottom">
           <div className="site-footer-bottom-inner">
-            <span>? {new Date().getFullYear()} Mind Haven by Mohit Naidu. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} Mind Haven by Mohit Naidu. All rights reserved.</span>
             <span>Made with care for students</span>
           </div>
         </div>

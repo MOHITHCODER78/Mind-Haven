@@ -1,29 +1,29 @@
 const resourceHighlights = [
   {
-    title: 'Managing Exam Stress',
-    category: 'Stress',
-    summary: 'Structured routines, realistic planning, and recovery habits for high-pressure weeks.',
+    title: 'Managing exam pressure',
+    category: 'Stress management',
+    summary: 'Simple routines, realistic revision blocks, and a steadier way to approach high-pressure weeks.',
   },
   {
-    title: 'Calming Anxiety Spirals',
+    title: 'Calming anxious spirals',
     category: 'Anxiety',
-    summary: 'Grounding exercises and reframing prompts for moments that feel mentally crowded.',
+    summary: 'Grounding prompts and breathing resets for moments that feel crowded or hard to manage.',
   },
   {
-    title: 'Rebuilding Motivation',
-    category: 'Motivation',
-    summary: 'Small habit resets for students dealing with emotional fatigue and loss of momentum.',
+    title: 'Rebuilding momentum',
+    category: 'Healthy habits',
+    summary: 'Small habit resets for days when energy is low and starting feels harder than usual.',
   },
 ];
 
 const wallHighlights = [
   {
-    message: 'I stopped pretending I was fine and asked for help this week. That felt difficult but important.',
-    tag: 'motivation',
+    message: 'I asked for help instead of trying to hold everything together alone. That changed the day.',
+    tag: 'support',
     support: 31,
   },
   {
-    message: 'Trying to take exam pressure one hour at a time instead of catastrophizing the whole week.',
+    message: 'I am taking exam pressure one hour at a time instead of letting the whole week scare me.',
     tag: 'exam stress',
     support: 24,
   },
@@ -41,9 +41,9 @@ const moodSeries = [
 
 const dashboardMetrics = [
   { label: 'Mood logs this month', value: '21' },
-  { label: 'Helpful resources saved', value: '08' },
+  { label: 'Resources saved', value: '08' },
   { label: 'Support chats available', value: '12' },
-  { label: 'Wall posts encouraged', value: '48' },
+  { label: 'Community posts seen', value: '48' },
 ];
 
 export { resourceHighlights, wallHighlights, moodSeries, dashboardMetrics };

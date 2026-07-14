@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import SectionHeading from '../components/shared/SectionHeading';
 import api from '../services/api';
+import { getResourceCoverImage } from '../data/visualAssets';
 
 const categories = [
   'stress',
@@ -103,9 +104,9 @@ function AdminResourcesPage() {
     <div className="page-stack">
       <section className="panel compact-panel">
         <SectionHeading
-          eyebrow="Resources"
-          title="Create and manage support content"
-          description="This is the right admin-side workflow for article publishing instead of placing content tools on the public resource page."
+          eyebrow="Resource CMS"
+          title="Create, edit, and keep the library current"
+          description="Use this workspace to publish articles, attach links, and keep the student resource library up to date."
         />
         <div className="admin-metrics-grid">
           <article className="metric-card compact-metric-card"><span>Total resources</span><strong>{resources.length}</strong></article>
@@ -116,10 +117,10 @@ function AdminResourcesPage() {
 
       <section className="grid-section two-up admin-sections">
         <div className="panel compact-panel">
-          <SectionHeading eyebrow="Publish" title="Add a new resource" description="Create external links, embedded videos, or internal articles that show up in the student resource hub." />
+          <SectionHeading eyebrow="Publish" title="Add a new resource" description="Create an article, guide, or video entry that appears in the student resource hub." />
           <form className="resource-form" onSubmit={handleSubmit}>
             <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Resource title" required />
-            <textarea name="summary" value={formData.summary} onChange={handleChange} placeholder="Short summary" rows="4" required />
+            <textarea name="summary" value={formData.summary} onChange={handleChange} placeholder="Short summary for students" rows="4" required />
             <select name="category" value={formData.category} onChange={handleChange}>
               {categories.map((category) => <option key={category} value={category}>{category.replace('_', ' ')}</option>)}
             </select>
@@ -127,10 +128,10 @@ function AdminResourcesPage() {
               {types.map((type) => <option key={type} value={type}>{type}</option>)}
             </select>
             <input type="url" name="url" value={formData.url} onChange={handleChange} placeholder="External article URL or fallback link" />
-            <input type="url" name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="Video URL for embeds (YouTube/Vimeo)" />
+            <input type="url" name="videoUrl" value={formData.videoUrl} onChange={handleChange} placeholder="Video URL for embeds" />
             <input type="url" name="thumbnailUrl" value={formData.thumbnailUrl} onChange={handleChange} placeholder="Thumbnail image URL" />
             <input type="text" name="sourceName" value={formData.sourceName} onChange={handleChange} placeholder="Source name" />
-            <input type="text" name="readTime" value={formData.readTime} onChange={handleChange} placeholder="e.g. 5 min read or 8 min watch" />
+            <input type="text" name="readTime" value={formData.readTime} onChange={handleChange} placeholder="Example: 5 min read or 8 min watch" />
             <label className="checkbox-row"><input type="checkbox" name="featured" checked={formData.featured} onChange={handleChange} /><span>Featured</span></label>
             <label className="checkbox-row"><input type="checkbox" name="internal" checked={formData.internal} onChange={handleChange} /><span>Internal article</span></label>
             {message ? <p className="form-success">{message}</p> : null}
@@ -140,13 +141,20 @@ function AdminResourcesPage() {
         </div>
 
         <div className="panel compact-panel">
-          <SectionHeading eyebrow="Library" title="Existing resources" description="A live list of currently published resource entries." />
+          <SectionHeading eyebrow="Library" title="Current resources" description="A live list of what students can browse right now." />
           <div className="admin-list-grid">
-            {loading ? <p>Loading resources...</p> : resources.map((resource) => (
+            {loading ? <p>Loading resources...</p> : resources.map((resource, index) => (
               <article key={resource.id} className="admin-list-card">
                 <div className="resource-card-top">
                   <span className="tag">{resource.category.replace('_', ' ')}</span>
                   <span className="muted-inline">{resource.viewCount} views</span>
+                </div>
+                <div className="resource-thumbnail-wrap resource-thumbnail-compact">
+                  <img
+                    className="resource-thumbnail"
+                    src={resource.thumbnailUrl || getResourceCoverImage(resource.category, index)}
+                    alt={resource.title}
+                  />
                 </div>
                 <h3>{resource.title}</h3>
                 <p>{resource.sourceName || 'Mind Haven'}</p>
@@ -157,6 +165,7 @@ function AdminResourcesPage() {
                 </div>
               </article>
             ))}
+            {!loading && !resources.length ? <p>No resources have been added yet.</p> : null}
           </div>
         </div>
       </section>

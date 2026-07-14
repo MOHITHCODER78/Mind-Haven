@@ -1,26 +1,50 @@
 const http = require('http');
 const dotenv = require('dotenv');
+
+dotenv.config();
+
 const { Server } = require('socket.io');
 const app = require('./app');
 const connectDB = require('./config/db');
 const { updatePresenceFromToken } = require('./controllers/chatController');
+const validateEnv = require('./utils/validateEnv');
+const { authenticateSocket } = require('./utils/socketAuth');
 
-dotenv.config();
+validateEnv();
 connectDB();
 
 const port = process.env.PORT || 5000;
 const server = http.createServer(app);
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5174', process.env.CLIENT_URL],
+    origin: allowedOrigins,
     credentials: true,
   },
+  transports: ['websocket', 'polling'],
 });
+
+app.set('io', io);
 
 io.on('connection', async (socket) => {
   const token = socket.handshake.auth?.token;
-  await updatePresenceFromToken(token, 'online');
+  const user = await authenticateSocket(token);
+
+  if (!user) {
+    socket.disconnect();
+    return;
+  }
+
+  updatePresenceFromToken(token, 'online').catch(() => {
+    // Do not block presence update.
+  });
 
   socket.on('join-support-room', (conversationId) => {
     socket.join(conversationId);
@@ -45,8 +69,10 @@ io.on('connection', async (socket) => {
     });
   });
 
-  socket.on('disconnect', async () => {
-    await updatePresenceFromToken(token, 'offline');
+  socket.on('disconnect', () => {
+    updatePresenceFromToken(token, 'offline').catch(() => {
+      // Do not block disconnect if presence update fails.
+    });
   });
 });
 

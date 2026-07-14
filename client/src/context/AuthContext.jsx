@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from 'react';
+
 import api from '../services/api';
 
 const AuthContext = createContext(null);
@@ -12,7 +13,8 @@ function AuthProvider({ children }) {
     const token = localStorage.getItem('mindhaven_token');
 
     if (!token) {
-      setLoading(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(false);
       return;
     }
 
@@ -68,7 +70,13 @@ function AuthProvider({ children }) {
     setPendingAuth(null);
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    // eslint-disable-next-line no-unused-vars
+  } catch (_err) {
+      // ignore error
+    }
     localStorage.removeItem('mindhaven_token');
     setUser(null);
     setPendingAuth(null);

@@ -5,8 +5,6 @@ const isProduction = process.env.NODE_ENV === 'production';
 const sendOtpEmail = async ({ email, code }) => {
   const senderEmail = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@mindhaven.app';
   
-  // LOG OTP TO TERMINAL FOR IMMEDIATE TESTING
-  console.log(`[AUTH DEBUG] OTP for ${email}: ${code}`);
 
   // ── SMTP (Nodemailer) - High Priority ──
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {

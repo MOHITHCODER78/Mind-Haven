@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Bot, SendHorizonal, Sparkles } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
+import { SendHorizonal, Sparkles } from 'lucide-react';
 import SectionHeading from '../components/shared/SectionHeading';
 import api from '../services/api';
-import assistantHero from '../assets/images/assistant-hero.png.png';
+import { getPageImage } from '../data/visualAssets';
 
 const starterPrompts = [
   "I'm feeling overwhelmed",
@@ -31,8 +33,8 @@ function AiAssistantPage() {
   const [error, setError] = useState('');
   const [mode, setMode] = useState('guided');
   const [moodSummary, setMoodSummary] = useState(null);
-  const [recommendedResources, setRecommendedResources] = useState([]);
   const [suggestedActions, setSuggestedActions] = useState([]);
+const [recommendedResources, setRecommendedResources] = useState([]);
 
   useEffect(() => {
     if (threadRef.current) {
@@ -94,7 +96,9 @@ function AiAssistantPage() {
           </div>
         </div>
         <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }} className="assistant-summary-card">
-          <img className="section-illustration assistant-illustration" src={assistantHero} alt="AI assistant support illustration" />
+          <div className="assistant-image-shell">
+            <img className="assistant-image" src={getPageImage('assistant')} alt="Private conversation workspace" />
+          </div>
           <span className="status-pill">{modeLabel}</span>
           <strong>Use this when you need clarity, grounding, or one small next step.</strong>
           <p>
@@ -175,7 +179,7 @@ function AiAssistantPage() {
               <h3>Mind Haven assistant</h3>
               <p>Share what is on your mind. There is no need to phrase it perfectly.</p>
             </div>
-            <span className="status-chip"><Bot size={14} strokeWidth={2.1} /> Students only</span>
+            <span className="status-chip">Students only</span>
           </div>
 
           <div ref={threadRef} className="assistant-thread">

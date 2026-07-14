@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import SectionHeading from '../components/shared/SectionHeading';
 import useAuth from '../context/useAuth';
@@ -30,7 +30,7 @@ function ChatPage() {
     setError('');
 
     try {
-      const response = await api.get('/chat/conversations');
+      const response = await api.get('/api/chat/conversations');
       const items = response.data.conversations || [];
       setConversations(items);
       if (!selectedConversationId && items.length) {
@@ -51,7 +51,7 @@ function ChatPage() {
     }
 
     try {
-      const response = await api.get(`/chat/conversations/${conversationId}/messages`);
+      const response = await api.get(`/api/chat/conversations/${conversationId}/messages`);
       setMessages(response.data.messages || []);
       setSelectedConversation(response.data.conversation || null);
     } catch (requestError) {
@@ -59,6 +59,7 @@ function ChatPage() {
     }
   };
 
+   
   useEffect(() => {
     fetchConversations();
   }, []);
@@ -74,14 +75,37 @@ function ChatPage() {
     });
     socketRef.current = socket;
 
-    socket.on('receive-support-message', () => {
-      fetchMessages(selectedConversationId);
+    const handleMessage = ({ conversationId, message, statusUpdate }) => {
+      // Update messages list in-place if this conversation is open
+      if (conversationId === selectedConversationIdRef.current) {
+        if (message) {
+          setMessages((prev) => {
+            const alreadyExists = prev.some((m) => m.id === message.id);
+            return alreadyExists ? prev : [...prev, message];
+          });
+        }
+        if (statusUpdate) {
+          setSelectedConversation((prev) =>
+            prev ? { ...prev, status: statusUpdate.status } : prev
+          );
+        }
+      }
+      // Always refresh conversation list preview
       fetchConversations();
-    });
+    };
+
+    socket.on('receive-support-message', handleMessage);
 
     return () => {
+      socket.off('receive-support-message', handleMessage);
       socket.disconnect();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const selectedConversationIdRef = useRef(selectedConversationId);
+  useEffect(() => {
+    selectedConversationIdRef.current = selectedConversationId;
   }, [selectedConversationId]);
 
   useEffect(() => {
@@ -101,7 +125,7 @@ function ChatPage() {
     setError('');
 
     try {
-      const response = await api.post('/chat/conversations', topicForm);
+      const response = await api.post('/api/chat/conversations', topicForm);
       setTopicForm({ topic: '', assignedRole: 'counsellor' });
       setStatusMessage(response.data.message);
       await fetchConversations();
@@ -121,14 +145,9 @@ function ChatPage() {
     setError('');
 
     try {
-      await api.post(`/chat/conversations/${selectedConversationId}/messages`, { content: messageText });
-      socketRef.current?.emit('send-support-message', {
-        conversationId: selectedConversationId,
-        message: messageText,
-      });
+      await api.post(`/api/chat/conversations/${selectedConversationId}/messages`, { content: messageText });
+      // Server broadcasts the message via socket; no need to re-fetch or re-emit here.
       setMessageText('');
-      await fetchMessages(selectedConversationId);
-      await fetchConversations();
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Unable to send message right now.');
     }
@@ -143,7 +162,7 @@ function ChatPage() {
     setError('');
 
     try {
-      const response = await api.patch(`/chat/conversations/${selectedConversationId}/status`, { status });
+      const response = await api.patch(`/api/chat/conversations/${selectedConversationId}/status`, { status });
       setStatusMessage(response.data.message);
       await fetchMessages(selectedConversationId);
       await fetchConversations();
@@ -167,8 +186,8 @@ function ChatPage() {
       <section className="panel compact-panel">
         <SectionHeading
           eyebrow="Support chat"
-          title={supportSide ? 'Support inbox for student conversations' : 'Talk privately with a counsellor or peer mentor'}
-          description={supportSide ? 'Unread counts, assigned ownership, and close/reopen controls are now built into the inbox.' : 'Your chat is private, persistent, and assigned to the right type of support person.'}
+          title={supportSide ? 'Support inbox' : 'Talk to someone directly'}
+          description={supportSide ? 'Review conversations, keep track of open threads, and respond when you can.' : 'Your messages stay private and go to a counsellor or peer mentor.'}
         />
       </section>
 
@@ -176,7 +195,7 @@ function ChatPage() {
         <div className="panel compact-panel chat-sidebar">
           {user?.role === 'student' ? (
             <form className="resource-form" onSubmit={handleConversationCreate}>
-              <input type="text" name="topic" value={topicForm.topic} onChange={(event) => setTopicForm((current) => ({ ...current, topic: event.target.value }))} placeholder="What would you like help with?" required />
+              <input type="text" name="topic" value={topicForm.topic} onChange={(event) => setTopicForm((current) => ({ ...current, topic: event.target.value }))} placeholder="What do you want to talk about?" required />
               <select name="assignedRole" value={topicForm.assignedRole} onChange={(event) => setTopicForm((current) => ({ ...current, assignedRole: event.target.value }))}>
                 {supportRoles.map((role) => <option key={role.value} value={role.value}>{role.label}</option>)}
               </select>
@@ -212,6 +231,7 @@ function ChatPage() {
                 </div>
               </button>
             ))}
+            {!loading && !filteredConversations.length ? <p>No conversations match this filter.</p> : null}
           </div>
         </div>
 
@@ -249,13 +269,13 @@ function ChatPage() {
                 ))}
               </div>
               <form className="chat-form" onSubmit={handleSendMessage}>
-                <textarea rows="4" value={messageText} onChange={(event) => setMessageText(event.target.value)} placeholder={selectedConversation.status === 'closed' ? 'Reopen the conversation to continue messaging.' : 'Write a confidential message...'} disabled={selectedConversation.status === 'closed'} />
+                <textarea rows="4" value={messageText} onChange={(event) => setMessageText(event.target.value)} placeholder={selectedConversation.status === 'closed' ? 'Reopen the conversation to continue.' : 'Write your message here...'} disabled={selectedConversation.status === 'closed'} />
                 <button className="button primary" type="submit" disabled={selectedConversation.status === 'closed'}>Send message</button>
               </form>
             </>
           ) : (
             <div className="chat-empty-state">
-              <p>{user?.role === 'student' ? 'Start a conversation to begin chatting with support.' : 'Select a conversation to review messages.'}</p>
+              <p>{user?.role === 'student' ? 'Start a conversation to begin a private support chat.' : 'Select a conversation to review the latest messages.'}</p>
             </div>
           )}
         </div>

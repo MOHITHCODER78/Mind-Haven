@@ -3,7 +3,7 @@ function SectionHeading({ eyebrow, title, description }) {
     <div className="section-heading">
       <p className="eyebrow">{eyebrow}</p>
       <h2>{title}</h2>
-      <p>{description}</p>
+      {description ? <p>{description}</p> : null}
     </div>
   );
 }

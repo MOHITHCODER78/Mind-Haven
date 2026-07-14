@@ -7,7 +7,7 @@ const seedAdminIfMissing = async () => {
   const adminEmail = process.env.DEFAULT_ADMIN_EMAIL || 'admin@mindhaven.app';
   const adminPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'Admin@123456';
 
-  let adminUser = await User.findOne({ email: adminEmail });
+  let adminUser = await User.findOne({ email: adminEmail }).select('+password');
 
   if (!adminUser) {
     adminUser = new User({

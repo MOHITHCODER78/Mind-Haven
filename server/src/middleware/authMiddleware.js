@@ -11,7 +11,12 @@ const protect = async (req, res, next) => {
 
   try {
     const token = authHeader.split(' ')[1];
-    const secret = process.env.JWT_SECRET || 'development-secret';
+    const secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+      return res.status(500).json({ message: 'Server is not configured with JWT_SECRET.' });
+    }
+
     const decoded = jwt.verify(token, secret);
 
     if (mongoose.connection.readyState === 1) {

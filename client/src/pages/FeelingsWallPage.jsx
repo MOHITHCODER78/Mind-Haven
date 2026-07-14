@@ -38,16 +38,17 @@ function FeelingsWallPage() {
     setLoading(true);
     setError('');
 
-    try {
-      const response = await api.get(`/wall${queryString}`);
-      setPosts(response.data.posts || []);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Unable to load wall posts right now.');
-    } finally {
-      setLoading(false);
-    }
+      try {
+        const response = await api.get(`/api/wall${queryString}`);
+        setPosts(response.data.posts || []);
+      } catch (requestError) {
+        setError(requestError.response?.data?.message || 'Unable to load wall posts right now.');
+      } finally {
+        setLoading(false);
+      }
   };
 
+   
   useEffect(() => {
     fetchPosts();
   }, [queryString]);
@@ -63,16 +64,16 @@ function FeelingsWallPage() {
     setError('');
     setSubmitting(true);
 
-    try {
-      const response = await api.post('/wall', postForm);
-      setPostMessage(response.data.message);
-      setPostForm({ content: '', tag: postForm.tag });
-      await fetchPosts();
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Unable to post right now.');
-    } finally {
-      setSubmitting(false);
-    }
+      try {
+        const response = await api.post('/api/wall', postForm);
+        setPostMessage(response.data.message);
+        setPostForm({ content: '', tag: postForm.tag });
+        await fetchPosts();
+      } catch (requestError) {
+        setError(requestError.response?.data?.message || 'Unable to post right now.');
+      } finally {
+        setSubmitting(false);
+      }
   };
 
   const handleReaction = async (postId, reaction) => {
@@ -81,12 +82,12 @@ function FeelingsWallPage() {
       return;
     }
 
-    try {
-      await api.post(`/wall/${postId}/react`, { reaction });
-      await fetchPosts();
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Unable to add your reaction right now.');
-    }
+      try {
+        await api.post(`/api/wall/${postId}/react`, { reaction });
+        await fetchPosts();
+      } catch (requestError) {
+        setError(requestError.response?.data?.message || 'Unable to add your reaction right now.');
+      }
   };
 
   const handleReport = async (postId) => {
@@ -95,13 +96,13 @@ function FeelingsWallPage() {
       return;
     }
 
-    try {
-      const response = await api.post(`/wall/${postId}/report`);
-      setPostMessage(response.data.message);
-      await fetchPosts();
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Unable to report this post right now.');
-    }
+      try {
+        const response = await api.post(`/api/wall/${postId}/report`);
+        setPostMessage(response.data.message);
+        await fetchPosts();
+      } catch (requestError) {
+        setError(requestError.response?.data?.message || 'Unable to report this post right now.');
+      }
   };
 
   return (
@@ -109,8 +110,8 @@ function FeelingsWallPage() {
       <section className="panel wall-hero-panel">
         <SectionHeading
           eyebrow="Anonymous wall"
-          title="A positive-only space for honest emotional check-ins"
-          description="Students can share what they are carrying without exposing identity. Sensitive content is moderation-ready and supportive reactions stay positive-only."
+          title="Share what's on your mind, no name attached"
+          description="Post honestly, react with care, and flag anything that needs attention. This space is meant to feel safe, not loud."
         />
         <div className="wall-filter-row">
           {tags.map((tag) => (
@@ -130,8 +131,8 @@ function FeelingsWallPage() {
         <div className="panel wall-compose-panel">
           <SectionHeading
             eyebrow="Share safely"
-            title="Post anonymously"
-            description={user ? 'Your name stays hidden on the wall. Use the tag that best matches what you are feeling.' : 'Sign in to post, react, and report while keeping wall posts anonymous.'}
+            title="Post without your name"
+            description={user ? 'Your name stays hidden. Pick the tag that fits what you are feeling.' : 'Sign in to post, react, and help keep the space safer.'}
           />
           {user ? (
             <form className="resource-form" onSubmit={handleSubmit}>
@@ -146,19 +147,19 @@ function FeelingsWallPage() {
                 onChange={handleFormChange}
                 rows="6"
                 maxLength="500"
-                placeholder="Write what is on your mind. Keep it honest, gentle, and safe."
+                placeholder="What's on your mind? Keep it honest and kind."
                 required
               />
               <div className="wall-compose-footer">
                 <span>{postForm.content.length}/500</span>
                 <button className="button primary" type="submit" disabled={submitting}>
-                  {submitting ? 'Posting...' : 'Post Anonymously'}
+                  {submitting ? 'Posting...' : 'Post'}
                 </button>
               </div>
             </form>
           ) : (
             <div className="wall-signin-card">
-              <p>Posting stays anonymous, but account login helps us keep the space safer.</p>
+              <p>Posts are anonymous. Signing in helps us keep this space safer for everyone.</p>
               <Link className="button primary" to="/login">Sign in to post</Link>
             </div>
           )}
@@ -168,7 +169,7 @@ function FeelingsWallPage() {
 
         <div className="wall-stream">
           {loading ? <div className="panel"><p>Loading posts...</p></div> : null}
-          {!loading && !posts.length ? <div className="panel"><p>No posts yet for this filter.</p></div> : null}
+          {!loading && !posts.length ? <div className="panel"><p>Nothing matches this filter yet.</p></div> : null}
           {!loading && posts.length ? (
             posts.map((post) => (
               <article key={post.id || post._id} className="panel wall-post-card">
@@ -194,7 +195,7 @@ function FeelingsWallPage() {
                   </div>
                 </div>
                 <button type="button" className="text-button danger-text" onClick={() => handleReport(post.id || post._id)}>
-                  Report for review
+                  Report
                 </button>
               </article>
             ))
