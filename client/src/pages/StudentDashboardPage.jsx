@@ -28,15 +28,13 @@ function StudentDashboardPage() {
       setLogs(moodsResponse.data.logs || []);
       setStats(moodsResponse.data.stats || { currentStreak: 0, averageMood: 0, sentimentSummary: { positive: 0, neutral: 0, negative: 0 } });
       setRecommendations(recommendationsResponse.data.recommendations || []);
-    // eslint-disable-next-line no-unused-vars
     } catch (_err) {
       console.error('Data sync failed');
     }
   };
 
-   
   useEffect(() => {
-    fetchDashboardData(); // eslint-disable-line react-hooks/set-state-in-effect
+    fetchDashboardData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -118,28 +116,28 @@ function StudentDashboardPage() {
               <HoverCard>
                 <Link to="/mood-tracker" className="assistant-prompt-button" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <Calendar size={20} color="var(--primary)" />
-                      <div>
-                        <strong>Daily check-in</strong>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Add a short note about how you are feeling</p>
-                      </div>
+                  <div>
+                    <strong>Daily check-in</strong>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Add a short note about how you are feeling</p>
+                  </div>
                 </Link>
               </HoverCard>
               <HoverCard>
                 <Link to="/assistant" className="assistant-prompt-button" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <MessageSquare size={20} color="var(--primary)" />
-                      <div>
-                        <strong>Open assistant</strong>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Talk through something when you need a moment to slow down</p>
-                      </div>
+                  <div>
+                    <strong>Open assistant</strong>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Talk through something when you need a moment to slow down</p>
+                  </div>
                 </Link>
               </HoverCard>
               <HoverCard>
                 <Link to="/resources" className="assistant-prompt-button" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <BookOpen size={20} color="var(--primary)" />
-                      <div>
-                        <strong>Browse resources</strong>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Find practical guides and short reads</p>
-                      </div>
+                  <div>
+                    <strong>Browse resources</strong>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)' }}>Find practical guides and short reads</p>
+                  </div>
                 </Link>
               </HoverCard>
             </div>
@@ -150,7 +148,7 @@ function StudentDashboardPage() {
       {/* ── Top Recommendations ── */}
       <Reveal delay={0.4}>
         <section className="panel compact-panel">
-            <SectionHeading title="For you" description="A few suggestions based on what you have been exploring." />
+          <SectionHeading title="For you" description="A few suggestions based on what you have been exploring." />
           <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
             {recommendations.slice(0, 3).map((resource, idx) => (
               <Reveal key={resource.id} delay={0.1 * idx} y={20}>

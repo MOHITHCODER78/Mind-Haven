@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const WallPost = require('../models/WallPost');
 const fallbackWallPosts = require('../data/fallbackWallPosts');
 const { analyzeSentiment } = require('../utils/sentiment');
+const { sanitizeUserInput } = require('../utils/sanitization');
 
 const allowedTags = ['exam_stress', 'anxiety', 'burnout', 'depression', 'loneliness', 'heartbreak', 'motivation', 'placements'];
 
@@ -62,8 +63,10 @@ const createWallPost = async (req, res) => {
     return res.status(400).json({ message: 'Please choose a valid feeling tag.' });
   }
 
-  const riskyContent = containsRiskyLanguage(content);
-  const sentiment = analyzeSentiment(content);
+  // Sanitize user input before processing
+  const sanitizedContent = sanitizeUserInput(content.trim());
+  const riskyContent = containsRiskyLanguage(sanitizedContent);
+  const sentiment = analyzeSentiment(sanitizedContent);
 
   if (mongoose.connection.readyState !== 1) {
     return res.status(201).json({
@@ -72,7 +75,7 @@ const createWallPost = async (req, res) => {
         : 'Your anonymous post was shared successfully.',
       post: {
         id: `demo-${Date.now()}`,
-        content,
+        content: sanitizedContent,
         tag,
         status: riskyContent ? 'flagged' : 'published',
         reactions: { support: 0, relate: 0, strength: 0 },
@@ -86,7 +89,7 @@ const createWallPost = async (req, res) => {
 
   const post = await WallPost.create({
     user: req.user.id,
-    content: content.trim(),
+    content: sanitizedContent,
     tag,
     status: riskyContent ? 'flagged' : 'published',
     moderationReason: riskyContent ? 'Needs safety review' : '',

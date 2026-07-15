@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const MoodLog = require('../models/MoodLog');
 const { analyzeSentiment } = require('../utils/sentiment');
+const { sanitizeUserInput } = require('../utils/sanitization');
 
 const fallbackMoodHistory = [
   { id: 'm1', day: 'Mon', moodScore: 3, moodLabel: 'steady', moodColor: '#b3b08a', note: 'Got through classes without too much drift.', sentimentLabel: 'neutral', sentimentScore: 0, sentimentIntensity: 'low' },
@@ -90,7 +91,9 @@ const createMoodLog = async (req, res) => {
   }
 
   const moodState = moodMap[score];
-  const sentiment = analyzeSentiment(note);
+  // Sanitize the note before processing
+  const sanitizedNote = sanitizeUserInput(note);
+  const sentiment = analyzeSentiment(sanitizedNote);
 
   if (mongoose.connection.readyState !== 1) {
     return res.status(201).json({
@@ -100,7 +103,7 @@ const createMoodLog = async (req, res) => {
         moodScore: score,
         moodLabel: moodState.moodLabel,
         moodColor: moodState.moodColor,
-        note,
+        note: sanitizedNote,
         day: new Date().toLocaleDateString('en-US', { weekday: 'short' }),
         sentimentLabel: sentiment.label,
         sentimentScore: sentiment.score,
@@ -126,7 +129,7 @@ const createMoodLog = async (req, res) => {
     moodLog.moodScore = score;
     moodLog.moodLabel = moodState.moodLabel;
     moodLog.moodColor = moodState.moodColor;
-    moodLog.note = note;
+    moodLog.note = sanitizedNote;
     moodLog.sentimentLabel = sentiment.label;
     moodLog.sentimentScore = sentiment.score;
     moodLog.sentimentIntensity = sentiment.intensity;
@@ -137,7 +140,7 @@ const createMoodLog = async (req, res) => {
       moodScore: score,
       moodLabel: moodState.moodLabel,
       moodColor: moodState.moodColor,
-      note,
+      note: sanitizedNote,
       sentimentLabel: sentiment.label,
       sentimentScore: sentiment.score,
       sentimentIntensity: sentiment.intensity,

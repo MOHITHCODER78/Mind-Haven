@@ -28,7 +28,7 @@ const validateEnv = () => {
     console.warn(`[ENV] Missing recommended environment variables: ${recommended.join(', ')}`);
   }
 
-  console.log('[ENV] Environment validation passed.');
+console.log('[ENV] Environment validation passed.');
 };
 
 module.exports = validateEnv;

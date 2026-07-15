@@ -11,6 +11,8 @@ const supportRoles = [
 
 function ChatPage() {
   const { user } = useAuth();
+  // Initialize refs early to avoid stale closure issues
+  const selectedConversationIdRef = useRef('');
   const socketRef = useRef(null);
   const [conversations, setConversations] = useState([]);
   const [selectedConversationId, setSelectedConversationId] = useState('');
@@ -59,13 +61,17 @@ function ChatPage() {
     }
   };
 
-   
   useEffect(() => {
     fetchConversations();
   }, []);
 
   useEffect(() => {
     fetchMessages(selectedConversationId);
+  }, [selectedConversationId]);
+
+  // Update ref BEFORE socket effect to ensure current value is available
+  useEffect(() => {
+    selectedConversationIdRef.current = selectedConversationId;
   }, [selectedConversationId]);
 
   useEffect(() => {
@@ -100,13 +106,7 @@ function ChatPage() {
       socket.off('receive-support-message', handleMessage);
       socket.disconnect();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const selectedConversationIdRef = useRef(selectedConversationId);
-  useEffect(() => {
-    selectedConversationIdRef.current = selectedConversationId;
-  }, [selectedConversationId]);
 
   useEffect(() => {
     if (socketRef.current) {

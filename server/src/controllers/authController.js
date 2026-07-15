@@ -155,6 +155,11 @@ const sendOtp = async (req, res) => {
 };
 
 const buildFallbackStaffUser = ({ email, password, allowedRoles }) => {
+  // Only allow fallback users in development mode for security
+  if (process.env.NODE_ENV === 'production') {
+    return null;
+  }
+
   const normalizedEmail = email.toLowerCase().trim();
 
   const fallbackUsers = [
@@ -275,6 +280,10 @@ const verifyOtp = async (req, res) => {
   const normalizedEmail = email.toLowerCase().trim();
 
   if (mongoose.connection.readyState !== 1) {
+    // Only allow demo OTP in non-production environments
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(503).json({ message: 'Database connection required for authentication.' });
+    }
     if (code !== '123456') {
       return res.status(401).json({ message: 'Invalid OTP.' });
     }

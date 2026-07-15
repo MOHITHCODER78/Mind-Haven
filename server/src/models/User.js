@@ -14,10 +14,11 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      index: true,
     },
     password: {
       type: String,
-      minlength: [6, 'Password must be at least 6 characters.'],
+      minlength: [8, 'Password must be at least 8 characters.'],
       default: undefined,
       select: false,
     },
@@ -25,11 +26,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ['student', 'admin', 'counsellor', 'peer_mentor'],
       default: 'student',
+      index: true,
     },
     avatarUrl: String,
     isVerified: {
       type: Boolean,
       default: false,
+      index: true,
     },
     availabilityStatus: {
       type: String,
@@ -43,6 +46,10 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Compound indexes for common queries
+userSchema.index({ role: 1, availabilityStatus: 1 });
+userSchema.index({ isVerified: 1, role: 1 });
 
 userSchema.pre('save', async function save() {
   if (!this.password || !this.isModified('password')) {

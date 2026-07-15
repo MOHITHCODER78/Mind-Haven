@@ -66,10 +66,12 @@ const sendOtpEmail = async ({ email, code }) => {
         }),
       });
 
+      const brevoResponse = await response.json();
       if (response.ok) {
         console.log(`OTP email sent to ${email} via Brevo API`);
         return { delivered: true, preview: null };
       }
+      console.error('Brevo API failed:', response.status, brevoResponse);
     } catch (error) {
       console.error('Brevo API failed:', error.message);
     }
