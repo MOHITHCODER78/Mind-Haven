@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 
 const isProduction = process.env.NODE_ENV === 'production';
+// force IPv4 for SMTP
 
 const sendOtpEmail = async ({ email, code }) => {
   const senderEmail = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@mindhaven.app';
