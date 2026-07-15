@@ -19,6 +19,7 @@ const sendOtpEmail = async ({ email, code }) => {
         },
         connectionTimeout: 5000,
         socketTimeout: 5000,
+        family: 4,
       });
 
       const htmlContent = `
