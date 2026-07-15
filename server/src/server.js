@@ -4,8 +4,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = require('./app');
-// Trust proxy for proper rate limiting on Render
-app.set('trust proxy', true);
+// Trust proxy is handled in rateLimiter.js via ipKeyGenerator with trustProxy: 1
+// This securely handles rate limiting behind Render's single proxy
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const { updatePresenceFromToken } = require('./controllers/chatController');
