@@ -11,7 +11,6 @@ const createRateLimiter = (windowMs, max, message) => rateLimit({
   // rate-limit will use req.ip which now correctly reflects the client IP
 });
 
-
 const otpLimiter = createRateLimiter(60 * 1000, 3, 'Too many OTP requests. Please wait before trying again.');
 const authLimiter = createRateLimiter(15 * 60 * 1000, 10, 'Too many authentication attempts. Please try again later.');
 const generalLimiter = createRateLimiter(60 * 1000, 100, 'Too many requests. Please slow down.');
