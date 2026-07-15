@@ -17,6 +17,8 @@ const sendOtpEmail = async ({ email, code }) => {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
+        connectionTimeout: 5000,
+        socketTimeout: 5000,
       });
 
       const htmlContent = `
